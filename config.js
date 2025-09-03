@@ -4,7 +4,7 @@ const path = require('path');
 const baseConfig = {
     port: process.env.PORT || 10000,
     defaultUserAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-    defaultLanguage: 'Italiana',
+    defaultLanguage: 'English',
     cacheSettings: {
         updateInterval: 2 * 60 * 60 * 1000,
         maxAge: 12 * 60 * 60 * 1000,
@@ -79,8 +79,8 @@ function loadCustomConfig() {
                     },
                     catalogs: [{
                         ...baseConfig.manifest.catalogs[0],
-                        id: addonConfigExists ? 'omg_plus_tv' : baseConfig.manifest.catalogs[0].id,
-                        name: addonConfigExists ? 'OMG+ TV' : baseConfig.manifest.catalogs[0].name,
+                        id: addonConfigExists ? 'TRUE_plus_tv' : baseConfig.manifest.catalogs[0].id,
+                        name: addonConfigExists ? 'TRUE TV' : baseConfig.manifest.catalogs[0].name,
                         extra: [
                             {
                                 name: 'genre',

@@ -28,8 +28,8 @@ const baseConfig = {
         catalogs: [
             {
                 type: 'tv',
-                id: 'omg_tv',
-                name: 'OMG TV',
+                id: 'true_tv',
+                name: 'TRUE TV',
                 extra: [
                     {
                         name: 'genre',

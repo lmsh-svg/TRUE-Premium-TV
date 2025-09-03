@@ -1,12 +1,12 @@
 /**
- * Restituisce tutto il codice JavaScript per i controlli della pagina di configurazione
- * @param {string} protocol - Il protocollo HTTP/HTTPS in uso
- * @param {string} host - L'hostname del server
- * @returns {string} - Codice JavaScript da inserire nel template
+ * Returns all JavaScript code for the configuration page controls
+ * @param {string} protocol - The HTTP/HTTPS protocol in use
+ * @param {string} host - The server hostname
+ * @returns {string} - JavaScript code to be inserted into the template
  */
 const getViewScripts = (protocol, host) => {
     return `
-        // Funzioni per le sezioni espandibili
+        // Functions for expandable sections
         function toggleAdvancedSettings() {
             const content = document.getElementById('advanced-settings-content');
             const toggle = document.getElementById('advanced-settings-toggle');
@@ -28,7 +28,7 @@ const getViewScripts = (protocol, host) => {
             toggle.textContent = content.classList.contains('show') ? '▲' : '▼';
         }
 
-        // Funzioni per la gestione della configurazione
+        // Functions for configuration management
         function getConfigQueryString() {
             const form = document.getElementById('configForm');
             const formData = new FormData(form);
@@ -112,7 +112,7 @@ const getViewScripts = (protocol, host) => {
             const file = event.target.files[0];
             if (!file) return;
         
-            showLoader('Ripristino configurazione in corso...');
+            showLoader('Restoring configuration...');
             
             const reader = new FileReader();
             reader.onload = async function(e) {
@@ -134,7 +134,7 @@ const getViewScripts = (protocol, host) => {
                     if (config.resolver_update_interval) {
                         document.getElementById('resolverUpdateInterval').value = config.resolver_update_interval;
                     
-                        // Crea un campo nascosto nel form se non esiste già
+                        // Create a hidden field in the form if it doesn't already exist
                         let hiddenField = document.querySelector('input[name="resolver_update_interval"]');
                         if (!hiddenField) {
                             hiddenField = document.createElement('input');
@@ -143,10 +143,10 @@ const getViewScripts = (protocol, host) => {
                             document.getElementById('configForm').appendChild(hiddenField);
                         }
                         
-                        // Imposta il valore nel campo nascosto
+                        // Set the value in the hidden field
                         hiddenField.value = config.resolver_update_interval;
                     
-                        // Pianifica l'aggiornamento del resolver
+                        // Schedule the resolver update
                         await fetch('/api/resolver', {
                             method: 'POST',
                             headers: {
@@ -159,11 +159,11 @@ const getViewScripts = (protocol, host) => {
                         });
                     }
                     
-                    // Ripristina anche i campi Python negli input visibili dell'interfaccia
+                    // Restore Python fields in the visible interface inputs
                     if (config.python_script_url) {
                         document.getElementById('pythonScriptUrl').value = config.python_script_url;
         
-                        // Scarica lo script Python
+                        // Download the Python script
                         const downloadResponse = await fetch('/api/python-script', {
                             method: 'POST',
                             headers: {
@@ -177,10 +177,10 @@ const getViewScripts = (protocol, host) => {
         
                         const downloadData = await downloadResponse.json();
                         if (!downloadData.success) {
-                            throw new Error('Download dello script fallito');
+                            throw new Error('Script download failed');
                         }
         
-                        // Esegui lo script Python
+                        // Execute the Python script
                         const executeResponse = await fetch('/api/python-script', {
                             method: 'POST',
                             headers: {
@@ -193,18 +193,18 @@ const getViewScripts = (protocol, host) => {
         
                         const executeData = await executeResponse.json();
                         if (!executeData.success) {
-                            throw new Error('Esecuzione dello script fallita');
+                            throw new Error('Script execution failed');
                         }
         
-                        alert('Script Python scaricato ed eseguito con successo!');
+                        alert('Python script downloaded and executed successfully!');
                         showM3uUrl(executeData.m3uUrl);
                     }
         
-                    // Gestisci l'intervallo di aggiornamento
+                    // Handle the update interval
                     if (config.python_update_interval) {
                         document.getElementById('updateInterval').value = config.python_update_interval;
         
-                        // Pianifica l'aggiornamento se presente
+                        // Schedule the update if present
                         await fetch('/api/python-script', {
                             method: 'POST',
                             headers: {
@@ -217,7 +217,7 @@ const getViewScripts = (protocol, host) => {
                         });
                     }
         
-                    // NUOVO: Avvia esplicitamente la ricostruzione della cache
+                    // Explicitly trigger cache rebuild
                     if (config.m3u) {
                         try {
                             const rebuildResponse = await fetch('/api/rebuild-cache', {
@@ -230,33 +230,33 @@ const getViewScripts = (protocol, host) => {
                             
                             const rebuildResult = await rebuildResponse.json();
                             if (rebuildResult.success) {
-                                alert('Configurazione ripristinata e ricostruzione cache avviata!');
+                                alert('Configuration restored and cache rebuild started!');
                             } else {
-                                alert('Configurazione ripristinata ma errore nella ricostruzione: ' + rebuildResult.message);
+                                alert('Configuration restored but cache rebuild error: ' + rebuildResult.message);
                             }
                         } catch (rebuildError) {
-                            console.error('Errore rebuild:', rebuildError);
-                            alert('Configurazione ripristinata ma errore nella ricostruzione della cache');
+                            console.error('Rebuild error:', rebuildError);
+                            alert('Configuration restored but cache rebuild error');
                         }
                     }
         
                     hideLoader();
                     
-                    // Aggiorna la pagina solo dopo che tutte le operazioni sono state completate
+                    // Update the page only after all operations are completed
                     const configQueryString = getConfigQueryString();
                     const configBase64 = btoa(configQueryString);
                     window.location.href = \`${protocol}://${host}/\${configBase64}/configure\`;
         
                 } catch (error) {
                     hideLoader();
-                    console.error('Errore:', error);
-                    alert('Errore nel caricamento del file di configurazione: ' + error.message);
+                    console.error('Error:', error);
+                    alert('Error loading configuration file: ' + error.message);
                 }
             };
             reader.readAsText(file);
         }
 
-        // Funzioni per lo script Python
+        // Functions for Python script
         function showPythonStatus(data) {
             const statusEl = document.getElementById('pythonStatus');
             const contentEl = document.getElementById('pythonStatusContent');
@@ -264,21 +264,21 @@ const getViewScripts = (protocol, host) => {
             statusEl.style.display = 'block';
             
             let html = '<table style="width: 100%; text-align: left;">';
-            html += '<tr><td><strong>In Esecuzione:</strong></td><td>' + (data.isRunning ? 'Sì' : 'No') + '</td></tr>';
-            html += '<tr><td><strong>Ultima Esecuzione:</strong></td><td>' + data.lastExecution + '</td></tr>';
-            html += '<tr><td><strong>Script Esistente:</strong></td><td>' + (data.scriptExists ? 'Sì' : 'No') + '</td></tr>';
-            html += '<tr><td><strong>File M3U Esistente:</strong></td><td>' + (data.m3uExists ? 'Sì' : 'No') + '</td></tr>';
+            html += '<tr><td><strong>Running:</strong></td><td>' + (data.isRunning ? 'Yes' : 'No') + '</td></tr>';
+            html += '<tr><td><strong>Last Execution:</strong></td><td>' + data.lastExecution + '</td></tr>';
+            html += '<tr><td><strong>Script Exists:</strong></td><td>' + (data.scriptExists ? 'Yes' : 'No') + '</td></tr>';
+            html += '<tr><td><strong>M3U File Exists:</strong></td><td>' + (data.m3uExists ? 'Yes' : 'No') + '</td></tr>';
             
-            // Aggiungi informazioni sull'aggiornamento pianificato
+            // Add information about scheduled updates
             if (data.scheduledUpdates) {
-                html += '<tr><td><strong>Aggiornamento Automatico:</strong></td><td>Attivo ogni ' + data.updateInterval + '</td></tr>';
+                html += '<tr><td><strong>Automatic Update:</strong></td><td>Active every ' + data.updateInterval + '</td></tr>';
             }
             
             if (data.scriptUrl) {
-                html += '<tr><td><strong>URL Script:</strong></td><td>' + data.scriptUrl + '</td></tr>';
+                html += '<tr><td><strong>Script URL:</strong></td><td>' + data.scriptUrl + '</td></tr>';
             }
             if (data.lastError) {
-                html += '<tr><td><strong>Ultimo Errore:</strong></td><td style="color: #ff6666;">' + data.lastError + '</td></tr>';
+                html += '<tr><td><strong>Last Error:</strong></td><td style="color: #ff6666;">' + data.lastError + '</td></tr>';
             }
             html += '</table>';
             
@@ -296,15 +296,15 @@ const getViewScripts = (protocol, host) => {
         async function downloadPythonScript() {
             const url = document.getElementById('pythonScriptUrl').value;
             if (!url) {
-                alert('Inserisci un URL valido per lo script Python');
+                alert('Enter a valid URL for the Python script');
                 return;
             }
             
-            // Salva l'URL nel campo nascosto del form
+            // Save the URL in the hidden form field
             document.getElementById('hidden_python_script_url').value = url;
             
             try {
-                showLoader('Download script Python in corso...');
+                showLoader('Downloading Python script...');
                 
                 const response = await fetch('/api/python-script', {
                     method: 'POST',
@@ -321,21 +321,21 @@ const getViewScripts = (protocol, host) => {
                 hideLoader();
                 
                 if (data.success) {
-                    alert('Script scaricato con successo!');
+                    alert('Script downloaded successfully!');
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkPythonStatus();
             } catch (error) {
                 hideLoader();
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
         async function executePythonScript() {
             try {
-                showLoader('Esecuzione script Python in corso...');
+                showLoader('Executing Python script...');
                 
                 const response = await fetch('/api/python-script', {
                     method: 'POST',
@@ -351,16 +351,16 @@ const getViewScripts = (protocol, host) => {
                 hideLoader();
                 
                 if (data.success) {
-                    alert('Script eseguito con successo!');
+                    alert('Script executed successfully!');
                     showM3uUrl(data.m3uUrl);
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkPythonStatus();
             } catch (error) {
                 hideLoader();
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
@@ -383,7 +383,7 @@ const getViewScripts = (protocol, host) => {
                     showM3uUrl(window.location.origin + '/generated-m3u');
                 }
             } catch (error) {
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
@@ -391,11 +391,11 @@ const getViewScripts = (protocol, host) => {
             const m3uUrl = window.location.origin + '/generated-m3u';
             document.querySelector('input[name="m3u"]').value = m3uUrl;
             
-            // Ottieni i valori attuali dai campi
+            // Get current values from fields
             const pythonScriptUrl = document.getElementById('pythonScriptUrl').value;
             const updateInterval = document.getElementById('updateInterval').value;
             
-            // Se abbiamo i valori, assicuriamoci che siano salvati nei campi nascosti
+            // If we have values, ensure they are saved in hidden fields
             if (pythonScriptUrl) {
                 document.getElementById('hidden_python_script_url').value = pythonScriptUrl;
             }
@@ -404,17 +404,17 @@ const getViewScripts = (protocol, host) => {
                 document.getElementById('hidden_python_update_interval').value = updateInterval;
             }
             
-            alert('URL della playlist generata impostato nel campo M3U URL!');
+            alert('Generated playlist URL set in the M3U URL field!');
         }
         
         async function scheduleUpdates() {
             const interval = document.getElementById('updateInterval').value;
             if (!interval) {
-                alert('Inserisci un intervallo valido (es. 12:00)');
+                alert('Enter a valid interval (e.g., 12:00)');
                 return;
             }
             
-            // Salva l'intervallo nel campo nascosto del form
+            // Save the interval in the hidden form field
             document.getElementById('hidden_python_update_interval').value = interval;
             
             try {
@@ -433,12 +433,12 @@ const getViewScripts = (protocol, host) => {
                 if (data.success) {
                     alert(data.message);
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkPythonStatus();
             } catch (error) {
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
@@ -458,11 +458,11 @@ const getViewScripts = (protocol, host) => {
                 alert(data.message);
                 checkPythonStatus();
             } catch (error) {
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
-        // Funzioni per il resolver Python
+        // Functions for Python resolver
         function showResolverStatus(data) {
             const statusEl = document.getElementById('resolverStatus');
             const contentEl = document.getElementById('resolverStatusContent');
@@ -470,28 +470,28 @@ const getViewScripts = (protocol, host) => {
             statusEl.style.display = 'block';
             
             let html = '<table style="width: 100%; text-align: left;">';
-            html += '<tr><td><strong>In Esecuzione:</strong></td><td>' + (data.isRunning ? 'Sì' : 'No') + '</td></tr>';
-            html += '<tr><td><strong>Ultima Esecuzione:</strong></td><td>' + data.lastExecution + '</td></tr>';
-            html += '<tr><td><strong>Script Esistente:</strong></td><td>' + (data.scriptExists ? 'Sì' : 'No') + '</td></tr>';
+            html += '<tr><td><strong>Running:</strong></td><td>' + (data.isRunning ? 'Yes' : 'No') + '</td></tr>';
+            html += '<tr><td><strong>Last Execution:</strong></td><td>' + data.lastExecution + '</td></tr>';
+            html += '<tr><td><strong>Script Exists:</strong></td><td>' + (data.scriptExists ? 'Yes' : 'No') + '</td></tr>';
             
             if (data.resolverVersion) {
-                html += '<tr><td><strong>Versione:</strong></td><td>' + data.resolverVersion + '</td></tr>';
+                html += '<tr><td><strong>Version:</strong></td><td>' + data.resolverVersion + '</td></tr>';
             }
             
             if (data.cacheItems !== undefined) {
-                html += '<tr><td><strong>Item in Cache:</strong></td><td>' + data.cacheItems + '</td></tr>';
+                html += '<tr><td><strong>Cache Items:</strong></td><td>' + data.cacheItems + '</td></tr>';
             }
             
-            // Aggiungi informazioni sull'aggiornamento pianificato
+            // Add information about scheduled updates
             if (data.scheduledUpdates) {
-                html += '<tr><td><strong>Aggiornamento Automatico:</strong></td><td>Attivo ogni ' + data.updateInterval + '</td></tr>';
+                html += '<tr><td><strong>Automatic Update:</strong></td><td>Active every ' + data.updateInterval + '</td></tr>';
             }
             
             if (data.scriptUrl) {
-                html += '<tr><td><strong>URL Script:</strong></td><td>' + data.scriptUrl + '</td></tr>';
+                html += '<tr><td><strong>Script URL:</strong></td><td>' + data.scriptUrl + '</td></tr>';
             }
             if (data.lastError) {
-                html += '<tr><td><strong>Ultimo Errore:</strong></td><td style="color: #ff6666;">' + data.lastError + '</td></tr>';
+                html += '<tr><td><strong>Last Error:</strong></td><td style="color: #ff6666;">' + data.lastError + '</td></tr>';
             }
             html += '</table>';
             
@@ -499,45 +499,45 @@ const getViewScripts = (protocol, host) => {
         }
 
         function initializeResolverFields() {
-            // Cerca il valore dell'intervallo nella query dell'URL
+            // Look for the interval value in the URL query
             const urlParams = new URLSearchParams(window.location.search);
             const resolverUpdateInterval = urlParams.get('resolver_update_interval');
             
-            // In alternativa, cerca il campo nascosto nel form
+            // Alternatively, look for the hidden field in the form
             const hiddenField = document.querySelector('input[name="resolver_update_interval"]');
             
-            // Imposta il valore nel campo visibile
+            // Set the value in the visible field
             if (resolverUpdateInterval || (hiddenField && hiddenField.value)) {
                 document.getElementById('resolverUpdateInterval').value = resolverUpdateInterval || hiddenField.value;
             }
             
-            // Esegui il controllo dello stato
+            // Perform status check
             checkResolverStatus();
         }
         
-        // Assicurati che questa funzione venga chiamata al caricamento della pagina
+        // Ensure this function is called when the page loads
         window.addEventListener('DOMContentLoaded', function() {
             initializePythonFields();
             initializeResolverFields();
         });
         
-        // Aggiungi questa chiamata all'evento DOMContentLoaded
+        // Add this call to the DOMContentLoaded event
         window.addEventListener('DOMContentLoaded', function() {
             initializePythonFields();
-            initializeResolverFields(); // Aggiungi questa riga
+            initializeResolverFields();
         });
 
         async function downloadResolverScript() {
-            // Leggi l'URL dal campo nella configurazione avanzata
+            // Read the URL from the field in advanced settings
             const url = document.querySelector('input[name="resolver_script"]').value;
             
             if (!url) {
-                alert('Inserisci un URL valido nella sezione "Impostazioni Avanzate" → "URL Script Resolver Python"');
+                alert('Enter a valid URL in the "Advanced Settings" → "Python Resolver Script URL" section');
                 return;
             }
             
             try {
-                showLoader('Download script resolver in corso...');
+                showLoader('Downloading resolver script...');
                 
                 const response = await fetch('/api/resolver', {
                     method: 'POST',
@@ -554,23 +554,23 @@ const getViewScripts = (protocol, host) => {
                 hideLoader();
                 
                 if (data.success) {
-                    alert('Script resolver scaricato con successo!');
-                    // Non serve impostare nuovamente l'URL poiché lo leggiamo direttamente dal campo configurazione
+                    alert('Resolver script downloaded successfully!');
+                    // No need to set the URL again since we read it directly from the configuration field
                     document.querySelector('input[name="resolver_enabled"]').checked = true;
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkResolverStatus();
             } catch (error) {
                 hideLoader();
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
         async function createResolverTemplate() {
             try {
-                showLoader('Creazione template in corso...');
+                showLoader('Creating template...');
                 
                 const response = await fetch('/api/resolver', {
                     method: 'POST',
@@ -586,18 +586,18 @@ const getViewScripts = (protocol, host) => {
                 hideLoader();
                 
                 if (data.success) {
-                    alert('Template dello script resolver creato con successo! Il download inizierà automaticamente.');
+                    alert('Resolver script template created successfully! Download will start automatically.');
                     
-                    // Avvia il download automatico
+                    // Start the automatic download
                     window.location.href = '/api/resolver/download-template';
                     
                     checkResolverStatus();
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
             } catch (error) {
                 hideLoader();
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
@@ -615,14 +615,14 @@ const getViewScripts = (protocol, host) => {
                 
                 const data = await response.json();
                 if (data.success) {
-                    alert('✅ Script resolver verificato con successo!');
+                    alert('✅ Resolver script verified successfully!');
                 } else {
-                    alert('❌ Errore nella verifica dello script: ' + data.message);
+                    alert('❌ Script verification error: ' + data.message);
                 }
                 
                 checkResolverStatus();
             } catch (error) {
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
@@ -641,7 +641,7 @@ const getViewScripts = (protocol, host) => {
                 const data = await response.json();
                 showResolverStatus(data);
             } catch (error) {
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
@@ -659,28 +659,28 @@ const getViewScripts = (protocol, host) => {
                 
                 const data = await response.json();
                 if (data.success) {
-                    alert('Cache del resolver svuotata con successo!');
+                    alert('Resolver cache cleared successfully!');
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkResolverStatus();
             } catch (error) {
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
 
         async function scheduleResolverUpdates() {
             const interval = document.getElementById('resolverUpdateInterval').value;
             if (!interval) {
-                alert('Inserisci un intervallo valido (es. 12:00)');
+                alert('Enter a valid interval (e.g., 12:00)');
                 return;
             }
             
             try {
-                showLoader('Configurazione aggiornamento automatico in corso...');
+                showLoader('Configuring automatic update...');
                 
-                // Crea un campo nascosto nel form se non esiste già
+                // Create a hidden field in the form if it doesn't already exist
                 let hiddenField = document.querySelector('input[name="resolver_update_interval"]');
                 if (!hiddenField) {
                     hiddenField = document.createElement('input');
@@ -689,7 +689,7 @@ const getViewScripts = (protocol, host) => {
                     document.getElementById('configForm').appendChild(hiddenField);
                 }
                 
-                // Imposta il valore dell'intervallo nel campo nascosto
+                // Set the interval value in the hidden field
                 hiddenField.value = interval;
                 
                 const response = await fetch('/api/resolver', {
@@ -709,19 +709,19 @@ const getViewScripts = (protocol, host) => {
                 if (data.success) {
                     alert(data.message);
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkResolverStatus();
             } catch (error) {
                 hideLoader();
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
         
-        // Funzione per inizializzare i campi Python con i valori dai campi nascosti
+        // Function to initialize Python fields with values from hidden fields
         function initializePythonFields() {
-            // Copia i valori dai campi nascosti del form ai campi dell'interfaccia Python
+            // Copy values from hidden form fields to Python interface fields
             const pythonScriptUrl = document.getElementById('hidden_python_script_url').value;
             const pythonUpdateInterval = document.getElementById('hidden_python_update_interval').value;
             
@@ -733,14 +733,14 @@ const getViewScripts = (protocol, host) => {
                 document.getElementById('updateInterval').value = pythonUpdateInterval;
             }
             
-            // Se abbiamo un URL, eseguiamo il controllo dello stato
+            // If we have a URL, perform the status check
             if (pythonScriptUrl) {
                 checkPythonStatus();
             }
         }
 
-        //funzioni per visualizzare la rotella di caricamento
-        function showLoader(message = "Operazione in corso...") {
+        // Functions for displaying the loading spinner
+        function showLoader(message = "Operation in progress...") {
             document.getElementById('loaderMessage').textContent = message;
             document.getElementById('loaderOverlay').style.display = 'flex';
         }
@@ -751,7 +751,7 @@ const getViewScripts = (protocol, host) => {
 
         async function stopResolverUpdates() {
             try {
-                showLoader('Arresto aggiornamenti automatici in corso...');
+                showLoader('Stopping automatic updates...');
                 
                 const response = await fetch('/api/resolver', {
                     method: 'POST',
@@ -769,26 +769,26 @@ const getViewScripts = (protocol, host) => {
                 if (data.success) {
                     alert(data.message);
                     
-                    // Pulisci anche il campo dell'intervallo
+                    // Clear the interval field
                     document.getElementById('resolverUpdateInterval').value = '';
                     
-                    // Aggiorna anche il valore nel campo nascosto
+                    // Update the hidden field value
                     let hiddenField = document.querySelector('input[name="resolver_update_interval"]');
                     if (hiddenField) {
                         hiddenField.value = '';
                     }
                 } else {
-                    alert('Errore: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
                 
                 checkResolverStatus();
             } catch (error) {
                 hideLoader();
-                alert('Errore nella richiesta: ' + error.message);
+                alert('Request error: ' + error.message);
             }
         }
         
-        // Inizializza i campi Python all'avvio
+        // Initialize Python fields on startup
         window.addEventListener('DOMContentLoaded', function() {
             initializePythonFields();
             initializeResolverFields();

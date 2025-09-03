@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: TRUE-TV    
+    runtime: docker  
+    plan: free 
+    region: frankfurt

@@ -1,7 +1,7 @@
 {
-  "name": "omg-tv-stremio-addon",
+  "name": "TRUE-TV-stremio-addon",
   "version": "1.0.0",
-  "description": "Un add-on per Stremio con playlist di canali M3U.",
+  "description": "Experience The Real Uninterrupted Experience with TRUETV - Stream movies, TV shows, and live TV with TRUETV, delivering a truly high-quality and reliable experience unlike any other. Enjoy uninterrupted access to a wide range of content that is constantly expanding, with more channels and options added over time.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
